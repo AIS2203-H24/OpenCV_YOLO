@@ -1,6 +1,5 @@
 {
   "dependencies": [{
-    "name": "opencv",
-    "features": ["contrib", "cuda"]
+    "name": "opencv"
   }]
 }

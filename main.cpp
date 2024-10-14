@@ -61,8 +61,8 @@ namespace {
 
 int main() {
     // Load YOLO config and weights
-    String modelConfiguration = "data/yolov7-tiny.cfg";
-    String modelWeights = "data/yolov7-tiny.weights";
+    std::string modelConfiguration = "data/yolov7-tiny.cfg";
+    std::string modelWeights = "data/yolov7-tiny.weights";
 
     Net net = readNetFromDarknet(modelConfiguration, modelWeights);
     net.setPreferableBackend(DNN_BACKEND_OPENCV);
