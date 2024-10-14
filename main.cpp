@@ -17,19 +17,19 @@ namespace {
         std::ifstream ifs(classFile.c_str());
         std::string line;
         while (getline(ifs, line)) {
-            classNames.push_back(line);
+            classNames.emplace_back(line);
         }
         return classNames;
     }
 
     // Function to get YOLO output layer names
-    std::vector<String> getOutputNames(const Net &net) {
+    const std::vector<String> &getOutputNames(const Net &net) {
         static std::vector<String> names;
         if (names.empty()) {
             // Get indices of output layers
-            std::vector<int> outLayers = net.getUnconnectedOutLayers();
+            const std::vector<int> outLayers = net.getUnconnectedOutLayers();
             // Get names of all layers in the network
-            std::vector<String> layersNames = net.getLayerNames();
+            const std::vector<String> layersNames = net.getLayerNames();
             // Get the names of the output layers using their indices
             names.resize(outLayers.size());
             for (size_t i = 0; i < outLayers.size(); ++i) {
@@ -51,7 +51,7 @@ namespace {
         }
 
         int baseLine;
-        Size labelSize = getTextSize(label, FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
+        const auto labelSize = getTextSize(label, FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
         top = max(top, labelSize.height);
         rectangle(frame, Point(left, top - labelSize.height),
                   Point(left + labelSize.width, top + baseLine), Scalar::all(255), FILLED);
@@ -80,9 +80,10 @@ int main() {
 
     Mat frame, blob;
 
+    Size size(416, 416);
     while (cap.read(frame)) {
         // Create a 4D blob from the frame
-        blobFromImage(frame, blob, 1 / 255.0, Size(416, 416), Scalar(), true, false);
+        blobFromImage(frame, blob, 1 / 255.0, size, {}, true, false);
         net.setInput(blob);
 
         // Run forward pass
@@ -93,25 +94,25 @@ int main() {
         std::vector<int> classIds;
         std::vector<float> confidences;
         std::vector<Rect> boxes;
-        float confThreshold = 0.5;
-        float nmsThreshold = 0.4;
+        float confThreshold = 0.5f;
+        float nmsThreshold = 0.4f;
 
-        for (auto &out: outs) {
-            auto data = (float *) out.data;
+        for (const auto &out: outs) {
+            auto data = reinterpret_cast<float *>(out.data);
             for (int j = 0; j < out.rows; ++j, data += out.cols) {
                 Mat scores = out.row(j).colRange(5, out.cols);
                 Point classIdPoint;
                 double confidence;
-                minMaxLoc(scores, 0, &confidence, 0, &classIdPoint);
+                minMaxLoc(scores, nullptr, &confidence, nullptr, &classIdPoint);
                 if (confidence > confThreshold) {
-                    int centerX = (int) (data[0] * frame.cols);
-                    int centerY = (int) (data[1] * frame.rows);
-                    int width = (int) (data[2] * frame.cols);
-                    int height = (int) (data[3] * frame.rows);
+                    int centerX = static_cast<int>(data[0] * frame.cols);
+                    int centerY = static_cast<int>(data[1] * frame.rows);
+                    int width = static_cast<int>(data[2] * frame.cols);
+                    int height = static_cast<int>(data[3] * frame.rows);
                     int left = centerX - width / 2;
                     int top = centerY - height / 2;
                     classIds.push_back(classIdPoint.x);
-                    confidences.emplace_back((float) confidence);
+                    confidences.emplace_back(static_cast<float>(confidence));
                     boxes.emplace_back(left, top, width, height);
                 }
             }
@@ -130,7 +131,7 @@ int main() {
         // Display the frame
         imshow(windowName, frame);
 
-        // Break if the user presses 'q'
+        // Break if the user presses 'q' or exits app
         const auto key = waitKey(1) == 'q';
         if (windowClosed(windowName) || key) {
             break;
