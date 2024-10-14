@@ -15,8 +15,11 @@ To retrieve OpenCV, either:
 #### Utilize vcpkg (using manifest mode)
 Call CMake with `-DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake`
 
+> Consider removing "contrib", "cuda" features from vcpkg.json if you don't need them.
 
 ## CUDA
 
 You can leverage CUDA if you have CUDA hardware and have compiled OpenCV with CUDA support. 
 Replace `DNN_TARGET_CPU` with `DNN_TARGET_CUDA`.
+
+> Note, building OpenCV with CUDA may take a loooooong time (many hours).
